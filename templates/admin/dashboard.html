@@ -1,0 +1,32 @@
+﻿{% extends 'admin/base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">Dashboard</h1>
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3"><div class="card stat-card"><div class="card-body"><div class="small text-muted">Users</div><div class="h3">{{ totals.users }}</div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="card stat-card"><div class="card-body"><div class="small text-muted">Medicines</div><div class="h3">{{ totals.medicines }}</div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="card stat-card"><div class="card-body"><div class="small text-muted">Orders</div><div class="h3">{{ totals.orders }}</div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="card stat-card"><div class="card-body"><div class="small text-muted">Sales</div><div class="h3">INR {{ '%.2f'|format(totals.sales) }}</div></div></div></div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h2 class="h6">Recent Orders</h2>
+    <div class="table-responsive">
+      <table class="table table-sm">
+        <thead><tr><th>ID</th><th>User</th><th>Total</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+        {% for order in recent_orders %}
+          <tr>
+            <td>#{{ order.id }}</td><td>{{ order.user_name }}</td><td>INR {{ '%.2f'|format(order.total_amount) }}</td><td>{{ order.status }}</td>
+            <td><a class="btn btn-sm btn-outline-dark" href="{{ url_for('admin_order_detail', order_id=order.id) }}">View</a></td>
+          </tr>
+        {% else %}
+          <tr><td colspan="5">No orders yet.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

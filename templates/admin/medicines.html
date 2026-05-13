@@ -1,0 +1,30 @@
+﻿{% extends 'admin/base.html' %}
+{% block title %}Admin Medicines{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h4 mb-0">Medicines</h1>
+  <a class="btn btn-dark" href="{{ url_for('admin_add_medicine') }}">Add Medicine</a>
+</div>
+<div class="card shadow-sm">
+  <div class="card-body table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>ID</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Rx</th><th></th></tr></thead>
+      <tbody>
+      {% for med in medicines %}
+        <tr>
+          <td>{{ med.id }}</td><td>{{ med.name }}</td><td>{{ med.category }}</td><td>INR {{ '%.2f'|format(med.price) }}</td><td>{{ med.stock }}</td><td>{{ 'Yes' if med.prescription_required else 'No' }}</td>
+          <td class="text-nowrap">
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin_edit_medicine', medicine_id=med.id) }}">Edit</a>
+            <form method="post" action="{{ url_for('admin_delete_medicine', medicine_id=med.id) }}" class="d-inline">
+              <button class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this medicine?')">Delete</button>
+            </form>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="7">No medicines found.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

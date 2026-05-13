@@ -1,0 +1,22 @@
+﻿{% extends 'base.html' %}
+{% block title %}Order Success{% endblock %}
+{% block content %}
+<div class="card shadow-sm">
+  <div class="card-body p-4">
+    <h1 class="h4 text-success">Order Placed Successfully</h1>
+    <p class="mb-1">Order ID: <strong>#{{ order.id }}</strong></p>
+    <p class="text-muted">Status: {{ order.status }} | Date: {{ order.created_at }}</p>
+    <ul class="list-group my-3">
+      {% for item in items %}
+      <li class="list-group-item d-flex justify-content-between">
+        <span>{{ item.name }} x {{ item.quantity }}</span>
+        <span>INR {{ '%.2f'|format(item.unit_price * item.quantity) }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+    <div class="h5">Total: INR {{ '%.2f'|format(order.total_amount) }}</div>
+    <a href="{{ url_for('medicines') }}" class="btn btn-primary mt-3 me-2">Continue Shopping</a>
+    <a href="{{ url_for('customer_order_detail', order_id=order.id) }}" class="btn btn-outline-primary mt-3">View Order Details</a>
+  </div>
+</div>
+{% endblock %}

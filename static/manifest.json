@@ -1,0 +1,9 @@
+﻿{
+  "name": "Healthcare Pharmacy System",
+  "short_name": "Pharmacy",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7fbff",
+  "theme_color": "#0a6fb6",
+  "icons": []
+}

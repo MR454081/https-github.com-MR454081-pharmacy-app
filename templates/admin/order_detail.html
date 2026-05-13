@@ -1,0 +1,66 @@
+﻿{% extends 'admin/base.html' %}
+{% block title %}Order Detail{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">Order #{{ order.id }}</h1>
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <h2 class="h6">Items</h2>
+        <ul class="list-group list-group-flush">
+          {% for item in items %}
+          <li class="list-group-item d-flex justify-content-between px-0">
+            <span>{{ item.name }} x {{ item.quantity }}</span>
+            <span>INR {{ '%.2f'|format(item.quantity * item.unit_price) }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h2 class="h6">Prescription</h2>
+        {% if prescription %}
+          <p class="mb-1">Original file: {{ prescription.original_name }}</p>
+          <a href="{{ url_for('static', filename='uploads/prescriptions/' + prescription.file_name) }}" target="_blank" class="btn btn-sm btn-outline-primary">Open File</a>
+        {% else %}
+          <p class="text-muted mb-0">No prescription uploaded for this order.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h2 class="h6">Customer</h2>
+        <p class="mb-1"><strong>{{ order.user_name }}</strong></p>
+        <p class="mb-1">{{ order.user_email }}</p>
+        <p class="mb-1">{{ order.user_phone or '-' }}</p>
+        <hr />
+        <p class="mb-1">Total: <strong>INR {{ '%.2f'|format(order.total_amount) }}</strong></p>
+        <p class="mb-1">Payment Method: <strong>{{ order.payment_provider or '-' }}</strong></p>
+        <p class="mb-2">Payment Status: <strong>{{ order.payment_status or 'Pending' }}</strong></p>
+        <p class="mb-2">Address: {{ order.shipping_address }}</p>
+
+        <form method="post" class="mb-2">
+          <input type="hidden" name="action" value="mark_payment_received" />
+          <button class="btn btn-success w-100">Mark Payment Received</button>
+        </form>
+
+        <form method="post">
+          <input type="hidden" name="action" value="update_status" />
+          <label class="form-label">Order Status</label>
+          <select class="form-select mb-2" name="status">
+            {% for s in statuses %}
+              <option value="{{ s }}" {% if s == order.status %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+          </select>
+          <button class="btn btn-dark w-100">Update Status</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

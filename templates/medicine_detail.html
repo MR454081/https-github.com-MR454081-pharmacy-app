@@ -1,0 +1,45 @@
+﻿{% extends 'base.html' %}
+{% block title %}{{ medicine.name }}{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-md-5">
+    {% if medicine.image_filename %}
+      <img src="{{ url_for('static', filename='uploads/medicines/' + medicine.image_filename) }}" class="img-fluid rounded shadow-sm" alt="{{ medicine.name }}" />
+    {% else %}
+      <div class="med-placeholder large">No Image</div>
+    {% endif %}
+  </div>
+  <div class="col-md-7">
+    <h1 class="h3">{{ medicine.name }}</h1>
+    <p class="text-muted">{{ medicine.category }}</p>
+    {% if medicine.prescription_required %}<span class="badge text-bg-warning mb-2">Prescription Required</span>{% endif %}
+    <p>{{ medicine.description }}</p>
+    <p class="h4 text-primary">INR {{ '%.2f'|format(medicine.price) }}</p>
+    <p class="small">Stock: {{ medicine.stock }}</p>
+
+    <form method="post" action="{{ url_for('add_to_cart', medicine_id=medicine.id) }}" class="row g-2 align-items-end">
+      <div class="col-sm-4">
+        <label class="form-label">Quantity</label>
+        <input type="number" name="quantity" min="1" max="{{ medicine.stock }}" value="1" class="form-control" />
+      </div>
+      <div class="col-sm-8 d-grid">
+        <button class="btn btn-primary" {% if medicine.stock == 0 %}disabled{% endif %}>Add to Cart</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% if related %}
+<hr class="my-4" />
+<h2 class="h5">Related Medicines</h2>
+<div class="row g-3">
+  {% for med in related %}
+  <div class="col-6 col-md-3">
+    <a href="{{ url_for('medicine_detail', medicine_id=med.id) }}" class="text-decoration-none">
+      <div class="card h-100 shadow-sm"><div class="card-body"><div class="small text-muted">{{ med.category }}</div><div>{{ med.name }}</div></div></div>
+    </a>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,29 @@
+﻿{% extends 'admin/base.html' %}
+{% block title %}Users{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">Registered Users</h1>
+<div class="card shadow-sm">
+  <div class="card-body table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Address</th><th>Joined</th><th>Last Login</th><th>Login Count</th><th>IP</th></tr></thead>
+      <tbody>
+      {% for user in users %}
+        <tr>
+          <td>{{ user.id }}</td>
+          <td>{{ user.name }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.phone or '-' }}</td>
+          <td>{{ user.address or '-' }}</td>
+          <td>{{ user.created_at }}</td>
+          <td>{{ user.last_login_at or '-' }}</td>
+          <td>{{ user.login_count or 0 }}</td>
+          <td>{{ user.last_login_ip or '-' }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="9">No users found.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

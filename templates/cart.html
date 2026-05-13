@@ -1,0 +1,39 @@
+﻿{% extends 'base.html' %}
+{% block title %}Cart{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">Your Cart</h1>
+{% if items %}
+<form method="post" action="{{ url_for('update_cart') }}">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Medicine</th><th>Price</th><th>Qty</th><th>Subtotal</th><th></th></tr></thead>
+      <tbody>
+      {% for item in items %}
+        <tr>
+          <td>{{ item.medicine.name }} {% if item.medicine.prescription_required %}<span class="badge text-bg-warning">Rx</span>{% endif %}</td>
+          <td>INR {{ '%.2f'|format(item.medicine.price) }}</td>
+          <td><input type="number" name="qty_{{ item.medicine.id }}" value="{{ item.quantity }}" min="0" max="{{ item.medicine.stock }}" class="form-control qty-input" /></td>
+          <td>INR {{ '%.2f'|format(item.subtotal) }}</td>
+          <td>
+            <button formaction="{{ url_for('remove_from_cart', medicine_id=item.medicine.id) }}" formmethod="post" class="btn btn-sm btn-outline-danger">Remove</button>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="d-flex justify-content-between align-items-center">
+    <div>
+      {% if requires_prescription %}<span class="small text-warning">Prescription required for one or more items.</span>{% endif %}
+    </div>
+    <div class="text-end">
+      <div class="h5">Total: INR {{ '%.2f'|format(total) }}</div>
+      <button class="btn btn-outline-primary">Update Cart</button>
+      <a href="{{ url_for('checkout') }}" class="btn btn-primary">Checkout</a>
+    </div>
+  </div>
+</form>
+{% else %}
+<div class="alert alert-info">Your cart is empty. <a href="{{ url_for('medicines') }}">Shop now</a>.</div>
+{% endif %}
+{% endblock %}

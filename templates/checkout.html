@@ -1,0 +1,170 @@
+﻿{% extends 'base.html' %}
+{% block title %}Checkout{% endblock %}
+{% block content %}
+<h1 class="h4 mb-3">Checkout</h1>
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data" id="checkoutForm">
+          <input type="hidden" name="payment_reference" id="paymentReference" value="{{ stripe_payment_reference }}" />
+          <input type="hidden" name="payment_status" id="paymentStatus" value="{% if stripe_paid %}Paid{% else %}Pending{% endif %}" />
+
+          <div class="mb-3">
+            <label class="form-label">Shipping Address</label>
+            <textarea name="shipping_address" class="form-control" rows="3" required>{{ user.address }}</textarea>
+          </div>
+
+          {% if requires_prescription %}
+          <div class="mb-3">
+            <label class="form-label">Upload Prescription (JPG/PNG/PDF)</label>
+            <input type="file" name="prescription" class="form-control" accept=".jpg,.jpeg,.png,.pdf" required />
+          </div>
+          {% endif %}
+
+          <div class="mb-3">
+            <label class="form-label">Payment Method</label>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="payment_method" id="payOnDelivery" value="pay_on_delivery" checked>
+              <label class="form-check-label" for="payOnDelivery">Pay on Delivery</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="payment_method" id="payUpi" value="upi">
+              <label class="form-check-label" for="payUpi">UPI Payment</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="payment_method" id="payWallet" value="wallet">
+              <label class="form-check-label" for="payWallet">Wallet</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="payment_method" id="payStripe" value="stripe">
+              <label class="form-check-label" for="payStripe">Stripe Checkout</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="payment_method" id="payRazorpay" value="razorpay">
+              <label class="form-check-label" for="payRazorpay">Razorpay Checkout</label>
+            </div>
+            <div class="small text-muted mt-1">Wallet Balance: INR {{ '%.2f'|format((user.wallet_balance or 0)) }}</div>
+          </div>
+
+          {% if upi_id %}
+          <div class="alert alert-info py-2">
+            UPI ID: <strong>{{ upi_id }}</strong><br>
+            {% if upi_link %}<a href="{{ upi_link }}">Pay with UPI App</a>{% endif %}
+          </div>
+          {% endif %}
+
+          {% if stripe_paid %}
+          <div class="alert alert-success py-2">Stripe payment completed. Click Place Order to confirm.</div>
+          {% endif %}
+
+          <button class="btn btn-primary" id="placeOrderBtn">Place Order</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h2 class="h6">Order Summary</h2>
+        <ul class="list-group list-group-flush mb-3">
+          {% for item in items %}
+          <li class="list-group-item d-flex justify-content-between px-0">
+            <span>{{ item.medicine.name }} x {{ item.quantity }}</span>
+            <span>INR {{ '%.2f'|format(item.subtotal) }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+        <div class="d-flex justify-content-between fw-bold">
+          <span>Total</span><span id="orderTotal" data-total="{{ '%.2f'|format(total) }}">INR {{ '%.2f'|format(total) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+{% if stripe_publishable_key %}
+<script src="https://js.stripe.com/v3/"></script>
+{% endif %}
+<script>
+(() => {
+  const form = document.getElementById('checkoutForm');
+  if (!form) return;
+  const paymentRef = document.getElementById('paymentReference');
+  const paymentStatus = document.getElementById('paymentStatus');
+
+  async function postJson(url, payload) {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload || {}),
+      credentials: 'same-origin'
+    });
+    return res.json();
+  }
+
+  form.addEventListener('submit', async (e) => {
+    const method = (form.querySelector('input[name="payment_method"]:checked') || {}).value;
+
+    if (method === 'stripe') {
+      {% if stripe_publishable_key %}
+      if (paymentStatus.value === 'Paid' && paymentRef.value) {
+        return;
+      }
+      e.preventDefault();
+      const data = await postJson('/api/payments/create-stripe-checkout-session', {});
+      if (!data.ok) {
+        alert(data.error || 'Stripe initialization failed');
+        return;
+      }
+      const stripe = Stripe('{{ stripe_publishable_key }}');
+      const result = await stripe.redirectToCheckout({ sessionId: data.session_id });
+      if (result && result.error) {
+        alert(result.error.message || 'Stripe redirect failed');
+      }
+      {% else %}
+      e.preventDefault();
+      alert('Stripe is not configured. Set STRIPE_PUBLISHABLE_KEY and STRIPE_SECRET_KEY.');
+      {% endif %}
+      return;
+    }
+
+    if (method === 'razorpay') {
+      {% if razorpay_key_id %}
+      e.preventDefault();
+      const data = await postJson('/api/payments/create-intent', { provider: 'razorpay' });
+      if (!data.ok) {
+        alert(data.error || 'Razorpay initialization failed');
+        return;
+      }
+      const options = {
+        key: data.key_id,
+        order_id: data.payment_reference,
+        name: 'Healthcare Pharmacy',
+        description: 'Medicine Order Payment',
+        amount: Math.round((data.amount || 0) * 100),
+        currency: 'INR',
+        handler: function (response) {
+          paymentRef.value = data.payment_reference;
+          paymentStatus.value = 'Paid';
+          form.submit();
+        },
+        modal: {
+          ondismiss: function () {
+            alert('Razorpay payment was not completed.');
+          }
+        }
+      };
+      const rzp = new Razorpay(options);
+      rzp.open();
+      {% else %}
+      e.preventDefault();
+      alert('Razorpay is not configured. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET.');
+      {% endif %}
+      return;
+    }
+  });
+})();
+</script>
+{% endblock %}

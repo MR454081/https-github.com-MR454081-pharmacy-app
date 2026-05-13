@@ -1,0 +1,39 @@
+﻿{% extends 'base.html' %}
+{% block title %}Home - Healthcare Pharmacy{% endblock %}
+{% block content %}
+<section class="hero p-4 p-md-5 rounded-4 mb-4">
+  <div class="row align-items-center">
+    <div class="col-lg-8">
+      <h1 class="display-6 fw-bold">Trusted Medicines Delivered</h1>
+      <p class="lead mb-4">Browse verified pharmacy products with secure checkout and prescription support.</p>
+      <a href="{{ url_for('medicines') }}" class="btn btn-light btn-lg">Shop Medicines</a>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h4 mb-0">Featured Medicines</h2>
+    <a href="{{ url_for('medicines') }}" class="btn btn-outline-primary btn-sm">View All</a>
+  </div>
+  <div class="row g-3">
+    {% for med in featured %}
+    <div class="col-6 col-md-4 col-lg-3">
+      <div class="card h-100 shadow-sm">
+        {% if med.image_filename %}
+          <img src="{{ url_for('static', filename='uploads/medicines/' + med.image_filename) }}" class="card-img-top med-img" alt="{{ med.name }}" />
+        {% else %}
+          <div class="med-placeholder">No Image</div>
+        {% endif %}
+        <div class="card-body d-flex flex-column">
+          <h3 class="h6">{{ med.name }}</h3>
+          <p class="small text-muted">{{ med.category }}</p>
+          <p class="fw-bold mb-2">INR {{ '%.2f'|format(med.price) }}</p>
+          <a href="{{ url_for('medicine_detail', medicine_id=med.id) }}" class="btn btn-primary btn-sm mt-auto">Details</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

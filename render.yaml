@@ -1,0 +1,16 @@
+﻿services:
+  - type: web
+    name: healthcare-pharmacy
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.2
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_ENTRY_PATH
+        value: /secure-admin-portal-9x7

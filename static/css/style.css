@@ -1,0 +1,47 @@
+﻿:root {
+  --brand: #0a6fb6;
+  --brand-dark: #07578f;
+  --muted-bg: #f4f8fb;
+}
+
+body {
+  background: linear-gradient(180deg, #f7fbff 0%, #edf4fa 100%);
+  min-height: 100vh;
+}
+
+.hero {
+  background: linear-gradient(120deg, var(--brand) 0%, #1ea5f7 100%);
+  color: #fff;
+}
+
+.med-img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+}
+
+.med-placeholder {
+  height: 160px;
+  display: grid;
+  place-items: center;
+  background: var(--muted-bg);
+  color: #6c757d;
+}
+
+.med-placeholder.large {
+  height: 300px;
+  border-radius: 0.5rem;
+}
+
+.stat-card {
+  border: none;
+  background: #fff;
+  box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.06);
+}
+
+@media (max-width: 767px) {
+  .med-img,
+  .med-placeholder {
+    height: 130px;
+  }
+}
