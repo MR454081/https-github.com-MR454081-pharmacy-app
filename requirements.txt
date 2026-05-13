@@ -3,3 +3,4 @@ Werkzeug==3.0.4
 PyJWT==2.9.0
 requests==2.32.3
 gunicorn==22.0.0
+python-dotenv==1.0.1
